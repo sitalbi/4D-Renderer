@@ -1,4 +1,4 @@
-#include <iostream>
+Ôªø#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <filesystem>
@@ -14,80 +14,122 @@
 #define width 1920
 #define height 1080
 
+glm::mat4 rotate(float angle);
+
 int main(void)
 {
+    // Setup
     GLFWwindow* window;
 
-    /* Initialize the library */
     if (!glfwInit())
         return -1;
 
 
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(width, height, "4D Renderer", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
         return -1;
     }
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
-	// Load OpenGL functions using glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
 		std::cerr << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	}
 
+	// Hypercube vertex data
     std::vector<float> g_vertex_buffer_data = {
-        // Front face
-        -0.5f, -0.5f, 0.5f,
-        0.5f, -0.5f, 0.5f,
-        0.5f, 0.5f, 0.5f,
-        -0.5f, 0.5f, 0.5f,
+        -0.5f, -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f, -0.5f,
 
-        // Back face
-        -0.5f, -0.5f, -0.5f,
-        -0.5f, 0.5f, -0.5f,
-        0.5f, 0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f,  0.5f, -0.5f,
 
-        // Right face
-        0.5f, -0.5f, 0.5f,
-        0.5f, -0.5f, -0.5f,
-        0.5f, 0.5f, -0.5f,
-        0.5f, 0.5f, 0.5f,
+        -0.5f, -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,  0.5f,
 
-        // Left face
-        -0.5f, -0.5f, 0.5f,
-        -0.5f, 0.5f, 0.5f,
-        -0.5f, 0.5f, -0.5f,
-        -0.5f, -0.5f, -0.5f,
-
-        // Top face
-        -0.5f, 0.5f, 0.5f,
-        0.5f, 0.5f, 0.5f,
-        0.5f, 0.5f, -0.5f,
-        -0.5f, 0.5f, -0.5f,
-
-        // Bottom face
-        -0.5f, -0.5f, 0.5f,
-        -0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f, -0.5f,
-        0.5f, -0.5f, 0.5f
+        -0.5f, -0.5f,  0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,  0.5f
     };
 
-
+	// Hypercube index data
     std::vector<unsigned int> g_index_buffer_data = {
-        0, 1, 2, 0, 2, 3,       // Front face
-        4, 5, 6, 4, 6, 7,       // Back face
-        8, 9, 10, 8, 10, 11,    // Right face
-        12, 13, 14, 12, 14, 15, // Left face
-        16, 17, 18, 16, 18, 19, // Top face
-        20, 21, 22, 20, 22, 23  // Bottom face
+        // Cell 0
+        4,  5,  6,   4,  6,  7,  
+        0,  2,  1,   0,  3,  2,  
+        1,  5,  6,   1,  6,  2,  
+        0,  7,  4,   0,  3,  7,  
+        3,  2,  6,   3,  6,  7,  
+        0,  5,  1,   0,  4,  5,  
+
+        // Cell 1
+        12, 13, 14,  12, 14, 15,
+        8,  10,  9,   8, 11, 10,
+        9,  13, 14,   9, 14, 10,
+        8, 15, 12,   8, 11, 15,
+        11, 10, 14,  11, 14, 15,
+        8, 13,  9,   8, 12, 13,
+
+        // Cell 2
+        8,   9,  10,   8,  10, 11, 
+        0,   2,   1,   0,   3,  2, 
+        1,   9,  10,   1,  10,  2, 
+        0,  11,   8,   0,   3, 11, 
+        3,   2,  10,   3,  10, 11, 
+        0,   9,   1,   0,   8,  9, 
+
+        // Cell 3
+        12, 13, 14,  12, 14, 15,  
+        4,   6,   5,   4,   7,  6, 
+        5,  13,  14,   5,  14,  6, 
+        4,  15,  12,   4,   7, 15, 
+        7,   6,  14,   7,  14, 15, 
+        4,  13,   5,   4,  12, 13, 
+
+        // Cell 4
+        9,  10,  14,   9,  14, 13, 
+        1,   6,   2,   1,   5,  6, 
+        2,  10,  14,   2,  14,  6, 
+        1,  13,   9,   1,   5, 13, 
+        5,   6,  14,   5,  14, 13, 
+        1,  10,   2,   1,   9, 10, 
+
+        // Cell 5
+        8,  11,  15,   8, 15, 12,  
+        0,   7,   3,   0,   4,  7,  
+        3,  11,  15,   3,  15,  7,  
+        0,  12,   8,   0,   4, 12,  
+        4,   7,  15,   4,  15, 12,  
+        0,  11,   3,   0,   8, 11,  
+
+        // Cell 6
+        11, 10,  14,  11,  14, 15,  
+        3,   6,   2,   3,   7,  6,  
+        2,  10,  14,   2,  14,  6,  
+        3,  15,  11,   3,   7, 15,  
+        7,   6,  14,   7,  14, 15,  
+        3,  10,   2,   3,  11, 10,  
+
+        // Cell 7
+        8,   9,  13,   8,  13, 12, 
+        0,   5,   1,   0,   4,  5, 
+        1,   9,  13,   1,  13,  5, 
+        0,  12,   8,   0,   4, 12, 
+        4,   5,  13,   4,  13, 12, 
+        0,   9,   1,   0,   8,  9  
     };
+
 
 
 
@@ -99,7 +141,7 @@ int main(void)
 
     // Vertex array
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 
     // Index buffer
     unsigned int ibo;
@@ -108,50 +150,81 @@ int main(void)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, g_index_buffer_data.size() * sizeof(unsigned int), &g_index_buffer_data[0], GL_STATIC_DRAW);
 
 
-    // Projection matrix: 45Åã Field of View, 4:3 ratio, display range: 0.1 unit <-> 100 units
+    // Matrices
     glm::mat4 Projection = glm::perspective(glm::radians(30.0f), (float)width / (float)height, 0.1f, 100.0f);
 
     glm::mat4 View = glm::lookAt(
-        glm::vec3(4, 3, 3), // Camera is at (4,3,3), in World Space
-        glm::vec3(0, 0, 0), // and looks at the origin
-        glm::vec3(0, 1, 0)  // Head is up (set to 0,-1,0 to look upside-down)
+        glm::vec3(4, 3, 3), 
+        glm::vec3(0, 0, 0), 
+        glm::vec3(0, 1, 0)  
     );
 
-    // Model matrix: an identity matrix (model will be at the origin)
     glm::mat4 Model = glm::mat4(1.0f);
-    // Our ModelViewProjection: multiplication of our 3 matrices
-    glm::mat4 mvp = Projection * View * Model;
 
 
-    // Create and compile our GLSL program from the shaders
-   Shader shader(RES_DIR "/shaders/default_vert.glsl", RES_DIR"/shaders/default_frag.glsl");
+    Shader shader(RES_DIR "/shaders/default_vert.glsl", RES_DIR"/shaders/default_frag.glsl");
 
-   shader.bind();
-   // Set the MVP matrix in the shader
-   shader.setUniformMat4f("MVP", mvp);
+    // Set the shader uniforms
+    shader.bind();
+    shader.setUniformMat4f("uModel", Model);
+    shader.setUniformMat4f("uView", View);
+    shader.setUniformMat4f("uProj", Projection);
+    
+	// arbitary camera w value
+    float cameraW = 2.0f;
+    shader.setUniform1f("uCameraW", cameraW);
 
-    // Enable depth 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+     // Enable depth 
+     glEnable(GL_DEPTH_TEST);
+     glDepthFunc(GL_LESS);
+    
+    // Enable antialiasing
+    glEnable(GL_MULTISAMPLE);
+    
+    // Wireframe mode 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	// Enable antialiasing
-	glEnable(GL_MULTISAMPLE);
 
-    /* Loop until the user closes the window */
+    // Loop
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
+        // Rotation angle
+        float t = (float)glfwGetTime();     
+        float angle = t * glm::radians(45.0f); 
+
+		// new model matrix with rotation 
+        glm::mat4 model = rotate(angle);
+
+        // uniform update
+        shader.bind();
+        shader.setUniformMat4f("uModel", model);
+
+        // Render
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawElements(GL_TRIANGLES, g_index_buffer_data.size(), GL_UNSIGNED_INT, nullptr);
 
-        /* Swap front and back buffers */
+        // Swap front and back buffers 
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */
+        // Poll for and process events
         glfwPollEvents();
     }
 
     glfwTerminate();
     return 0;
+}
+
+// Helper function to create a rotation matrix
+glm::mat4 rotate(float angle)
+{
+    float c = cos(angle);
+    float s = sin(angle);
+
+    glm::mat4 R(1.0f);
+
+    R[0][0] = c;   R[0][3] = -s;
+    R[3][0] = s;   R[3][3] = c;
+
+    return R;
 }

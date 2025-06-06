@@ -1,10 +1,13 @@
-# OpenGL project template
+# 4D Renderer (Work in progress)
 
-Template for OpenGL project configured with CMAKE.
+ Small 4D renderer project as a learning exercise.
 
-Dependencies:
-- GLAD (OpenGL loading library)
-- GLFW (Windows manager library)
-- GLM (OpenGL Mathematics)
-- ImGUI (UI)
-- STB (Image Loader) 
+ ## Visuals
+ ![hypercube rotating](https://simono.fr/4d.gif)
+ Example of a rotating [hypercube](https://en.wikipedia.org/wiki/Hypercube) in a 3D perspective of a 4D space.
+
+ ## TODO
+
+- [ ] Refactor using classes for models, camera, etc...
+- [ ] Camera movements
+- [ ] Add other 4D models 
